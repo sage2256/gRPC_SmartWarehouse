@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package smartwarehouse;
+
+service SmartLightingService {
+  rpc Brightness(stream BrightnessLevel) returns (LightStatus) {}
+  rpc Switch(stream OccupancyStatus) returns (LightStatus) {}
+  rpc Remote(RemoteRequest) returns (Confirmation) {}
+}
+
+message BrightnessLevel {
+  float level = 1;
+}
+
+message OccupancyStatus {
+  bool occupied = 1;
+}
+
+message RemoteRequest {
+  bool on = 1;
+}
+
+message LightStatus {
+  bool on = 1;
+}
+
+message Confirmation {
+  string message = 1;
+}

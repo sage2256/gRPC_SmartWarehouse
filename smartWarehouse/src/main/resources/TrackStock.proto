@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+package smartwarehouse;
+
+service TrackStock {
+  rpc Add(StockItem) returns (Confirmation) {}
+  rpc Remove(StockItem) returns (Confirmation) {}
+  rpc List(ListRequest) returns (stream StockItem) {}
+}
+
+message StockItem {
+  string name = 1;
+  int32 quantity = 2;
+ // float price = 3;
+}
+
+message ListRequest {
+ // int32 max_items = 1;
+  int32 list_items = 1;
+}
+
+message Confirmation {
+  bool success = 1;
+  string message = 2;
+}
