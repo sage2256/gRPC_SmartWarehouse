@@ -3,7 +3,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 package smartwarehouse;
 
-service TrackStock {
+service TrackStockService{
   rpc Add(StockItem) returns (Confirmation) {}
   rpc Remove(StockItem) returns (Confirmation) {}
   rpc List(ListRequest) returns (stream StockItem) {}

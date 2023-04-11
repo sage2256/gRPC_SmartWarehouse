@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package smartwarehouse;
 
-service AutomateOrder{
+service AutomateOrderService{
   rpc MakeOrder(OrderRequest) returns (Confirmation) {}
   rpc StopOrder(OrderRequest) returns (Confirmation) {}
   rpc Status(stream OrderRequest) returns (stream OrderStatus) {}
