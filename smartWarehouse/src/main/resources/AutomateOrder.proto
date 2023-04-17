@@ -1,5 +1,9 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
+option java_package = "grpc.automateorder.smartwarehouse";
+option java_outer_classname = "AutomateOrderServiceImpl";
+
 package smartwarehouse;
 
 service AutomateOrderService{
