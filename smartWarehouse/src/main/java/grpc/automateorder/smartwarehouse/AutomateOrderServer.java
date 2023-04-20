@@ -13,7 +13,7 @@ import smartwarehouse.AutomateOrderServiceGrpc.AutomateOrderServiceImplBase;
 public class AutomateOrderServer extends AutomateOrderServiceImplBase{
 	public static void main(String[] args) {
 		 AutomateOrderServer orderServer = new AutomateOrderServer();
-		 int port = 50052;
+		 int port = 50092;
 		 
 		 Server server;
 		try {
