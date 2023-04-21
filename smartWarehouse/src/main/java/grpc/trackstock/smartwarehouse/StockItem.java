@@ -3,8 +3,6 @@
 
 package grpc.trackstock.smartwarehouse;
 
-import java.awt.Component;
-
 /**
  * Protobuf type {@code smartwarehouse.StockItem}
  */
@@ -573,11 +571,6 @@ private static final long serialVersionUID = 0L;
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
     }
-
-	public Component setId(int i) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
     // @@protoc_insertion_point(builder_scope:smartwarehouse.StockItem)

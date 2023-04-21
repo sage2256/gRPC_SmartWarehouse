@@ -1,90 +1,35 @@
 package grpc.trackstock.smartwarehouse;
 
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TrackStockClient {
-	
-	private static TrackStockServiceGrpc.TrackStockServiceStub stub;
 
-	public static void main(String[] args) {
-		int port = 50054;
-		ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", port).usePlaintext().build();
-		stub = TrackStockServiceGrpc.newStub(channel);
-		
-		// Example usage of the gRPC API
-		addItem();
-		removeItem();
-		listItems();
-		
-		channel.shutdown();
-	}
-	
-	public static void addItem() {
-		StreamObserver<Confirmation> responseObserver = new StreamObserver<Confirmation>() {
-			@Override
-			public void onNext(Confirmation value) {
-				System.out.println("Add Item Response: " + value.getMessage());
-			}
+    private final ManagedChannel channel;
+    private final TrackStockServiceGrpc.TrackStockServiceStub stub;
 
-			@Override
-			public void onError(Throwable t) {
-				System.out.println("Error: " + t.getMessage());
-			}
+    public TrackStockClient(String host, int port) {
+        channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+        stub = TrackStockServiceGrpc.newStub(channel);
+    }
 
-			@Override
-			public void onCompleted() {
-				System.out.println("Add Item Request completed");
-			}
-		};
-		
-		StockItem item = StockItem.newBuilder().setId(1).setName("Item 1").setQuantity(10).build();
-		stub.add(item, responseObserver);
-	}
-	
-	public static void removeItem() {
-		StreamObserver<Confirmation> responseObserver = new StreamObserver<Confirmation>() {
-			@Override
-			public void onNext(Confirmation value) {
-				System.out.println("Remove Item Response: " + value.getMessage());
-			}
+    public void addItem(StockItem item, StreamObserver<Confirmation> responseObserver) {
+        stub.add(item, responseObserver);
+    }
 
-			@Override
-			public void onError(Throwable t) {
-				System.out.println("Error: " + t.getMessage());
-			}
+    public void removeItem(StockItem item, StreamObserver<Confirmation> responseObserver) {
+        stub.remove(item, responseObserver);
+    }
 
-			@Override
-			public void onCompleted() {
-				System.out.println("Remove Item Request completed");
-			}
-		};
-		
-		StockItem item = StockItem.newBuilder().setId(1).setName("Item 1").setQuantity(10).build();
-		stub.remove(item, responseObserver);
-	}
-	
-	public static void listItems() {
-		StreamObserver<StockItem> responseObserver = new StreamObserver<StockItem>() {
-			@Override
-			public void onNext(StockItem value) {
-				System.out.println("List Item Response: " + value.getName() + ", " + value.getQuantity());
-			}
+    public void listItems(int numItems, StreamObserver<StockItem> responseObserver) {
+        stub.list(ListRequest.newBuilder().setListItems(numItems).build(), responseObserver);
+    }
 
-			@Override
-			public void onError(Throwable t) {
-				System.out.println("Error: " + t.getMessage());
-			}
-
-			@Override
-			public void onCompleted() {
-				System.out.println("List Item Request completed");
-			}
-		};
-		
-		ListRequest request = ListRequest.newBuilder().setListItems(10).build();
-		stub.list(request, responseObserver);
-	}
+    public void shutdown() throws InterruptedException {
+        channel.shutdown().awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
 }

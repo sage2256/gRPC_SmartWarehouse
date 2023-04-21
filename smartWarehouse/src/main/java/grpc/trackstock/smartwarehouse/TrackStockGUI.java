@@ -1,119 +1,171 @@
 package grpc.trackstock.smartwarehouse;
 
 import javax.swing.*;
-import java.awt.*;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+
+
 import io.grpc.stub.StreamObserver;
 
-public class TrackStockGUI extends JFrame {
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private static final int PORT = 50054;
-    private static TrackStockServiceGrpc.TrackStockServiceStub stub;
-    private JPanel mainPanel;
-    private JButton addItemButton;
-    private JButton removeItemButton;
-    private JButton listItemsButton;
+public class TrackStockGUI {
+
+	private final TrackStockClient client;
+    private final JFrame frame;
+    private final JTextField itemField;
+    private final JTextField quantityField;
+    private final JButton addButton;
+    private final JButton removeButton;
+    private final JButton listButton;
+    private final JTextArea outputArea;
 
     public TrackStockGUI() {
-        setTitle("Track Stock Client");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // Initialize the client
+        client = new TrackStockClient("localhost", 50054);
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(3, 1));
+        // Create the JFrame and components
+        frame = new JFrame("Track Stock GUI");
+        frame.setSize(600, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
 
-        addItemButton = new JButton("Add Item");
-        addItemButton.addActionListener(e -> addItem());
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridLayout(2, 2, 10, 10));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        removeItemButton = new JButton("Remove Item");
-        removeItemButton.addActionListener(e -> removeItem());
+        JLabel itemLabel = new JLabel("Item:");
+        itemField = new JTextField();
+        JLabel quantityLabel = new JLabel("Quantity:");
+        quantityField = new JTextField();
 
-        listItemsButton = new JButton("List Items");
-        listItemsButton.addActionListener(e -> listItems());
+        inputPanel.add(itemLabel);
+        inputPanel.add(itemField);
+        inputPanel.add(quantityLabel);
+        inputPanel.add(quantityField);
 
-        mainPanel.add(addItemButton);
-        mainPanel.add(removeItemButton);
-        mainPanel.add(listItemsButton);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1, 3, 10, 10));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        add(mainPanel, BorderLayout.CENTER);
+        addButton = new JButton("Add Item");
+        removeButton = new JButton("Remove Item");
+        listButton = new JButton("List Items");
 
-        setVisible(true);
+        buttonPanel.add(addButton);
+        buttonPanel.add(removeButton);
+        buttonPanel.add(listButton);
+
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+
+        frame.add(inputPanel, BorderLayout.NORTH);
+        frame.add(buttonPanel, BorderLayout.CENTER);
+        frame.add(new JScrollPane(outputArea), BorderLayout.SOUTH);
+
+        addActionListeners();
     }
 
+    
+
+    private void addActionListeners() {
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addItem();
+            }
+        });
+
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeItem();
+            }
+        });
+
+        listButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listItems();
+            }
+        });
+    }
+
+    
+    private void addItem() {
+        String itemName = itemField.getText();
+        int itemQuantity = Integer.parseInt(quantityField.getText());
+        StockItem item = StockItem.newBuilder().setName(itemName).setQuantity(itemQuantity).build();
+
+        client.addItem(item, new StreamObserver<Confirmation>() {
+            @Override
+            public void onNext(Confirmation confirmation) {
+                System.out.println(confirmation);
+                JOptionPane.showMessageDialog(frame, confirmation.getMessage());
+            }
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Add Item completed");
+            }
+        });
+    }
+
+    private void removeItem() {
+        String itemName = itemField.getText();
+        int itemQuantity = Integer.parseInt(quantityField.getText());
+        StockItem item = StockItem.newBuilder().setName(itemName).setQuantity(itemQuantity).build();
+
+        client.removeItem(item, new StreamObserver<Confirmation>() {
+            @Override
+            public void onNext(Confirmation confirmation) {
+                System.out.println(confirmation);
+                JOptionPane.showMessageDialog(frame, confirmation.getMessage());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Remove Item completed");
+            }
+        });
+    }
+
+    private void listItems() {
+        int numItems = Integer.parseInt(quantityField.getText());
+
+        client.listItems(numItems, new StreamObserver<StockItem>() {
+            @Override
+            public void onNext(StockItem stockItem) {
+                System.out.println("Item: " + stockItem.getName() + ", Quantity: " + stockItem.getQuantity());
+                JOptionPane.showMessageDialog(frame, "Item: " + stockItem.getName() + ", Quantity: " + stockItem.getQuantity());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("List Items completed");
+            }
+        });
+    }
     public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", PORT).usePlaintext().build();
-        stub = TrackStockServiceGrpc.newStub(channel);
-        new TrackStockGUI();
-    }
-
-    public void addItem() {
-        StreamObserver<Confirmation> responseObserver = new StreamObserver<Confirmation>() {
-            @Override
-            public void onNext(Confirmation value) {
-                JOptionPane.showMessageDialog(mainPanel, "Add Item Response: " + value.getMessage());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	TrackStockGUI gui = new TrackStockGUI();
+                gui.frame.setVisible(true);
             }
-
-            @Override
-            public void onError(Throwable t) {
-                JOptionPane.showMessageDialog(mainPanel, "Error: " + t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                JOptionPane.showMessageDialog(mainPanel, "Add Item Request completed");
-            }
-        };
-
-        StockItem item = StockItem.newBuilder().setId(1).setName("Item 1").setQuantity(10).build();
-        stub.add(item, responseObserver);
-    }
-
-    public void removeItem() {
-        StreamObserver<Confirmation> responseObserver = new StreamObserver<Confirmation>() {
-            @Override
-            public void onNext(Confirmation value) {
-                JOptionPane.showMessageDialog(mainPanel, "Remove Item Response: " + value.getMessage());
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                JOptionPane.showMessageDialog(mainPanel, "Error: " + t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                JOptionPane.showMessageDialog(mainPanel, "Remove Item Request completed");
-            }
-        };
-
-        StockItem item = StockItem.newBuilder().setId(1).setName("Item 1").setQuantity(10).build();
-        stub.remove(item, responseObserver);
-    }
-
-    public void listItems() {
-        StreamObserver<StockItem> responseObserver = new StreamObserver<StockItem>() {
-            @Override
-            public void onNext(StockItem value) {
-                JOptionPane.showMessageDialog(mainPanel, "List Item Response: " + value.getName() + ", " + value.getQuantity());
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                JOptionPane.showMessageDialog(mainPanel, "Error: " + t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                JOptionPane.showMessageDialog(mainPanel, "List Item Request completed");
-            }
-        };
-
-        ListRequest request = ListRequest.newBuilder().setListItems(10).build();
-        stub.list(request, responseObserver);
-    }
+        });
+}
 }
