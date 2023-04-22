@@ -1,68 +1,80 @@
 package grpc.smartlighting.smartwarehouse;
 
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
 public class SmartLightingClient {
+    private final SmartLightingServiceGrpc.SmartLightingServiceStub stub;
+    private final ManagedChannel channel;
 
-    private static SmartLightingServiceGrpc.SmartLightingServiceStub stub;
+    public SmartLightingClient(String host, int port) {
+        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
+    }
 
-    public static void main(String[] args) {
-        int port = 50053;
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", port).usePlaintext().build();
+    public SmartLightingClient(ManagedChannelBuilder<?> channelBuilder) {
+        channel = channelBuilder.build();
         stub = SmartLightingServiceGrpc.newStub(channel);
-
-        // Example usage of the gRPC API
-        switchLight(true);
-        setBrightness(0.7f);
-        switchLight(false);
-
-        channel.shutdown();
     }
 
-    public static void switchLight(boolean isOccupied) {
-        StreamObserver<OccupancyStatus> requestObserver = stub.switch_(new StreamObserver<LightStatus>() {
+    public void shutdown() throws InterruptedException {
+        channel.shutdown().awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
+    public void brightness(float level) {
+        stub.brightness(new StreamObserver<LightStatus>() {
             @Override
             public void onNext(LightStatus value) {
-                System.out.println("Light is " + (value.getOn() ? "on" : "off"));
+                System.out.println("Received light status: " + value.getOn());
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("Error: " + t.getMessage());
+                System.out.println("Brightness stream error: " + t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("Switch completed");
+                System.out.println("Brightness stream completed");
             }
-        });
-
-        requestObserver.onNext(OccupancyStatus.newBuilder().setOccupied(isOccupied).build());
-        requestObserver.onCompleted();
+        }).onNext(BrightnessLevel.newBuilder().setLevel(level).build());
     }
 
-    public static void setBrightness(float brightnessLevel) {
-        StreamObserver<BrightnessLevel> requestObserver = stub.brightness(new StreamObserver<LightStatus>() {
+    public void switchLight(boolean isOccupied) {
+        stub.switch_(new StreamObserver<LightStatus>() {
             @Override
             public void onNext(LightStatus value) {
-                System.out.println("Light is " + (value.getOn() ? "on" : "off"));
+                System.out.println("Received light status: " + value.getOn());
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("Error: " + t.getMessage());
+                System.out.println("Switch stream error: " + t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("Brightness set completed");
+                System.out.println("Switch stream completed");
+            }
+        }).onNext(OccupancyStatus.newBuilder().setOccupied(isOccupied).build());
+    }
+
+    public void remote(boolean turnOn) {
+        stub.remote(RemoteRequest.newBuilder().setOn(turnOn).build(), new StreamObserver<Confirmation>() {
+            @Override
+            public void onNext(Confirmation value) {
+                System.out.println("Received confirmation message: " + value.getMessage());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Remote request error: " + t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Remote request completed");
             }
         });
-
-        requestObserver.onNext(BrightnessLevel.newBuilder().setLevel(brightnessLevel).build());
-        requestObserver.onCompleted();
     }
 }

@@ -167,5 +167,5 @@ public class TrackStockGUI {
                 gui.frame.setVisible(true);
             }
         });
-}
+    }
 }
