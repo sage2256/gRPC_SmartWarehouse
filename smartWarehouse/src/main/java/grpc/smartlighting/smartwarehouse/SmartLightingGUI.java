@@ -33,7 +33,7 @@ public class SmartLightingGUI {
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new GridLayout(3, 1));
-
+        // Add panel for adjusting brightness
         JPanel brightnessPanel = new JPanel();
         brightnessPanel.setBorder(BorderFactory.createTitledBorder("Brightness"));
         brightnessInput = new JTextField(10);
@@ -42,6 +42,7 @@ public class SmartLightingGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                	// Get the brightness level from the text field
                     float level = Float.parseFloat(brightnessInput.getText());
                     client.brightness(level);
                 } catch (NumberFormatException ex) {
@@ -52,7 +53,7 @@ public class SmartLightingGUI {
         brightnessPanel.add(brightnessInput);
         brightnessPanel.add(brightnessButton);
         frame.add(brightnessPanel);
-
+        // Add panel for switching occupancy status
         JPanel switchPanel = new JPanel();
         switchPanel.setBorder(BorderFactory.createTitledBorder("Switch"));
         occupiedButton = new JButton("Occupied");
@@ -72,7 +73,7 @@ public class SmartLightingGUI {
         switchPanel.add(occupiedButton);
         switchPanel.add(unoccupiedButton);
         frame.add(switchPanel);
-
+        // Add panel for remote control
         JPanel remotePanel = new JPanel();
         remotePanel.setBorder(BorderFactory.createTitledBorder("Remote"));
         turnOnButton = new JButton("Turn On");
@@ -91,13 +92,14 @@ public class SmartLightingGUI {
         });
         remotePanel.add(turnOnButton);
         remotePanel.add(turnOffButton);
-        frame.add(remotePanel);
-
-      
-        
-        
+        frame.add(remotePanel);        
         
     }
+    
+    /**
+     * Main method for starting the SmartLightingGUI.
+     * Creates a new instance of the GUI and makes it visible.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

@@ -16,9 +16,11 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		 // TODO Auto-generated method stub
+		 // Instantiate the SmartLightingServer class
 		 SmartLightingServer LightingServer = new SmartLightingServer();
 		 int port = 50053;
+		 // Register the service with JmDNS
 		 LightingServer.registerService();
 		 
 		 Server server;
@@ -34,7 +36,9 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 		
 		 
 	}
+	// Variable to keep track of light status
 	private boolean isLightOn = false;
+	// Implementation of the brightness method
 	@Override
 	public StreamObserver<BrightnessLevel> brightness(StreamObserver<LightStatus> responseObserver) {
 		// TODO Auto-generated method stub
@@ -42,6 +46,7 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 		 return new StreamObserver<BrightnessLevel>() {
 	            @Override
 	            public void onNext(BrightnessLevel value) {
+	            	// Get the brightness level from the request
 	                float brightnessLevel = value.getLevel();
 	                if (brightnessLevel == 0) {
 	                    brightnessLevel = 1.0f;
@@ -49,7 +54,9 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	                    brightnessLevel = 0.0f;
 	                }
 	                System.out.println("Received brightness level: " + brightnessLevel);
+	                // Update the light status
 	                isLightOn = brightnessLevel == 1;
+	                // Send the response to the client
 	                responseObserver.onNext(LightStatus.newBuilder().setOn(isLightOn).build());
 	            }
 
@@ -58,7 +65,7 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	                System.out.println("Brightness stream completed");
 	                responseObserver.onCompleted();
 	            }
-
+	            // Handle any errors that occur
 				@Override
 				public void onError(Throwable t) {
 					// TODO Auto-generated method stub
@@ -66,7 +73,7 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 				}
 	        };
 	}
-
+	// Implementation of the switch_ method
 	@Override
 	public StreamObserver<OccupancyStatus> switch_(StreamObserver<LightStatus> responseObserver) {
 		// TODO Auto-generated method stub
@@ -74,9 +81,12 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 		return new StreamObserver<OccupancyStatus>() {
             @Override
             public void onNext(OccupancyStatus value) {
+            	// Get the occupancy status from the request
                 boolean isOccupied = value.getOccupied();
                 System.out.println("Received occupancy status: " + isOccupied);
+                // Update the light status
                 isLightOn = isOccupied;
+                // Send the response to the client
                 responseObserver.onNext(LightStatus.newBuilder().setOn(isLightOn).build());
             }
 
@@ -93,14 +103,14 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 			}
         };
 	}
-
+	//implementation of the remote method
 	@Override
 	public void remote(RemoteRequest request, StreamObserver<Confirmation> responseObserver) {
 		// TODO Auto-generated method stub
 		//super.remote(request, responseObserver);
 		 boolean turnOn = request.getOn();
 	        System.out.println("Received remote request to turn " + (turnOn ? "on" : "off") + " the light");
-	        
+	        // Send the confirmation response to the client
 	        Confirmation confirmation = Confirmation.newBuilder()
 	                .setMessage("The light has been turned " + (turnOn ? "on" : "off"))
 	                .build();
@@ -108,11 +118,11 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	        responseObserver.onNext(confirmation);
 	        responseObserver.onCompleted();
 	}
-
+	// This method registers the service using JmDNS
 	private  void registerService() {
 		
 		 try {
-	          
+			 	// Create a JmDNS instance
 	            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 	            
 	            String service_type = "_lighting._tcp.local.";

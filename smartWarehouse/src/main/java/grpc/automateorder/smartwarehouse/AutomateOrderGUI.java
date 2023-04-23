@@ -14,50 +14,54 @@ import java.awt.event.ActionListener;
 import java.net.InetAddress;
 
 public class AutomateOrderGUI {
-
+	// Create a new instance of AutomateOrderClient 
     private final AutomateOrderClient client;
+    
+    // Create a new instance of JFrame
     private final JFrame frame;
     private final JTextField itemNameField;
     private final JTextField quantityField;
     private final JTextField customerNameField;
     private final JTextArea outputArea;
+    
     static String host = "_order._tcp.local.";
     static int port;
     static String resolvedIP;
 
     public AutomateOrderGUI() {
-    	testJMDNS();
-        // Initialize the client
+    	testJMDNS(); // Call the testJMDNS() method
+    	
+        // Initialize the AutomateOrderclient
         client = new AutomateOrderClient(resolvedIP, port);
 
         // Create the JFrame and components
         frame = new JFrame("Automate Order GUI");
-        frame.setSize(600, 400);
+        frame.setSize(600, 400);// Set the size of the JFrame
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-
+        // Create a new JPanel object
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridLayout(3, 2, 10, 10));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
+        // Create  new JLabel objects
         JLabel itemNameLabel = new JLabel("Item Name:");
         itemNameField = new JTextField();
         JLabel quantityLabel = new JLabel("Quantity:");
         quantityField = new JTextField();
         JLabel customerNameLabel = new JLabel("Customer Name:");
         customerNameField = new JTextField();
-
+        //adds the item name and quantity fields and labels
         inputPanel.add(itemNameLabel);
         inputPanel.add(itemNameField);
         inputPanel.add(quantityLabel);
         inputPanel.add(quantityField);
         inputPanel.add(customerNameLabel);
         inputPanel.add(customerNameField);
-
+        //creates the button objects
         JButton makeOrderButton = new JButton("Make Order");
         JButton stopOrderButton = new JButton("Stop Order");
         JButton streamOrderStatusButton = new JButton("Stream Order Status");
-
+        // Create button panel and add buttons to it
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3, 10, 10));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -65,7 +69,8 @@ public class AutomateOrderGUI {
         buttonPanel.add(makeOrderButton);
         buttonPanel.add(stopOrderButton);
         buttonPanel.add(streamOrderStatusButton);
-
+        
+        // Create output area and add it to a scroll pane
         outputArea = new JTextArea(10, 20);
         outputArea.setEditable(false);
         JScrollPane outputScrollPane = new JScrollPane(outputArea);
@@ -124,7 +129,7 @@ public class AutomateOrderGUI {
             }
         });
     }
-    
+    // Service listener class to detect service events
     private static class SampleListener implements ServiceListener {
 		public void serviceAdded(ServiceEvent event) {
 			System.out.println("Service added: " + event.getInfo());
@@ -143,7 +148,7 @@ public class AutomateOrderGUI {
 		}
     }
     
-	public static void testJMDNS() {
+	public static void testJMDNS() {// Discover the service using JmDNS
 			try {
 				
 				JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
