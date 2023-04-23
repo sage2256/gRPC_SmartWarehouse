@@ -37,13 +37,13 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	            @Override
 	            public void onNext(BrightnessLevel value) {
 	                float brightnessLevel = value.getLevel();
-	                if (brightnessLevel < 0.0) {
-	                    brightnessLevel = 0.0f;
-	                } else if (brightnessLevel > 1.0) {
+	                if (brightnessLevel == 0) {
 	                    brightnessLevel = 1.0f;
+	                } else if (brightnessLevel == 1.0) {
+	                    brightnessLevel = 0.0f;
 	                }
 	                System.out.println("Received brightness level: " + brightnessLevel);
-	                isLightOn = brightnessLevel > 0.5;
+	                isLightOn = brightnessLevel == 1;
 	                responseObserver.onNext(LightStatus.newBuilder().setOn(isLightOn).build());
 	            }
 
