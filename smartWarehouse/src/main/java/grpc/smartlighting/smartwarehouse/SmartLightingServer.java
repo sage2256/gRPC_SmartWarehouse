@@ -1,6 +1,11 @@
 package grpc.smartlighting.smartwarehouse;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 import grpc.smartlighting.smartwarehouse.SmartLightingServiceGrpc.SmartLightingServiceImplBase;
 import io.grpc.Server;
@@ -14,6 +19,7 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 		// TODO Auto-generated method stub
 		 SmartLightingServer LightingServer = new SmartLightingServer();
 		 int port = 50053;
+		 LightingServer.registerService();
 		 
 		 Server server;
 		try {
@@ -103,6 +109,35 @@ public class SmartLightingServer extends SmartLightingServiceImplBase{
 	        responseObserver.onCompleted();
 	}
 
-	
+	private  void registerService() {
+		
+		 try {
+	          
+	            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+	            
+	            String service_type = "_lighting._tcp.local.";
+	            String service_name = "smart Lighting";
+	           
+	            int port = 50053;
+
+	            
+	            String service_description = "Smart Lighting For Warehouse";
+	            // Register a service
+	            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, port, service_description);
+	            jmdns.registerService(serviceInfo);
+	            
+	            System.out.printf("registering service with type %s and name %s \n", service_type, service_name);
+	            
+	            // Wait a bit
+	            Thread.sleep(1000);
+
+	        } catch (IOException e) {
+	            System.out.println(e.getMessage());
+	        } catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    
+	}
 
 }

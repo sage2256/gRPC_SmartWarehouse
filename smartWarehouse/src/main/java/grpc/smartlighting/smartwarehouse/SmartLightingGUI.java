@@ -1,12 +1,15 @@
 package grpc.smartlighting.smartwarehouse;
 
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
 import javax.swing.*;
-
-import grpc.trackstock.smartwarehouse.TrackStockGUI;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
 
 public class SmartLightingGUI {
 
@@ -18,9 +21,13 @@ public class SmartLightingGUI {
     private final JButton unoccupiedButton;
     private final JButton turnOnButton;
     private final JButton turnOffButton;
-
+    static String host = "_lighting._tcp.local.";
+    static int port;
+    static String resolvedIP;
     public SmartLightingGUI() {
-        client = new SmartLightingClient("localhost", 50053);
+    	testJMDNS();
+    	System.out.println(port);
+        client = new SmartLightingClient(resolvedIP, port);
 
         frame = new JFrame("Smart Lighting");
         frame.setSize(400, 300);
@@ -86,7 +93,10 @@ public class SmartLightingGUI {
         remotePanel.add(turnOffButton);
         frame.add(remotePanel);
 
-       // frame.setVisible(true);
+      
+        
+        
+        
     }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -96,5 +106,35 @@ public class SmartLightingGUI {
             }
         });
     }
-   
+    private static class SampleListener implements ServiceListener {
+		public void serviceAdded(ServiceEvent event) {
+			System.out.println("Service added: " + event.getInfo());
+		}
+		public void serviceRemoved(ServiceEvent event) {
+			System.out.println("Service removed: " + event.getInfo());
+		}
+		@SuppressWarnings("deprecation")
+		public void serviceResolved(ServiceEvent event) {
+					System.out.println("Service resolved: " + event.getInfo());
+
+                    ServiceInfo info = event.getInfo();
+                    port = info.getPort();
+                    resolvedIP = info.getHostAddress();
+                    System.out.println("IP Resolved - " + resolvedIP + ":" + port);
+		}
+    }
+    
+	public static void testJMDNS() {
+			try {
+				
+				JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+				jmdns.addServiceListener(host, new SampleListener());
+	            Thread.sleep(20000);
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+		}
+	}
+	
+	
 }

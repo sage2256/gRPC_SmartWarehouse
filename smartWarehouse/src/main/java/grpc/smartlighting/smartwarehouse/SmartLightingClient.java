@@ -7,9 +7,10 @@ import io.grpc.stub.StreamObserver;
 public class SmartLightingClient {
     private final SmartLightingServiceGrpc.SmartLightingServiceStub stub;
     private final ManagedChannel channel;
+   
 
-    public SmartLightingClient(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
+    public SmartLightingClient(String resolvedIP, int port) {
+        this(ManagedChannelBuilder.forAddress(resolvedIP, port).usePlaintext());
     }
 
     public SmartLightingClient(ManagedChannelBuilder<?> channelBuilder) {
@@ -77,4 +78,5 @@ public class SmartLightingClient {
             }
         });
     }
+       
 }
