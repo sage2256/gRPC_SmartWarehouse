@@ -19,10 +19,10 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
 
     public static void main(String[] args) {
          AutomateOrderServer orderServer = new AutomateOrderServer();
-         int port = 50092;
-         orderServer.registerService();
+         int port = 50092; // Defines the port to be used
+         orderServer.registerService();  // Call the registerService() method to register the service
          Server server;
-        try {
+        try { // Creates and starts the gRPC server 
             server = ServerBuilder.forPort(port).addService(orderServer).build().start();
             System.out.println("Server started....");
             server.awaitTermination();
@@ -31,19 +31,22 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
         }
          
     }
-
+    
+    // Implement the makeOrder() method
     @Override
     public void makeOrder(OrderRequest request, StreamObserver<Confirmation> responseObserver) {
         System.out.println("---- Receiving Make order request from Client ---");
-        
+        // Create the order message
         String message = "Order created for " + request.getQuantity() + " " + request.getItemName() + "(s) for " + request.getCustomerName();
         Confirmation confirmation = Confirmation.newBuilder().setMessage(message).build();
         responseObserver.onNext(confirmation);
         responseObserver.onCompleted();
     }
-
+    
+    // Implement the stopOrder() method
     @Override
     public void stopOrder(OrderRequest request, StreamObserver<Confirmation> responseObserver) {
+    	// Create the stop order message
         String message = "Order stopped for " + request.getQuantity() + " " + request.getItemName() + "(s) for " + request.getCustomerName();
         Confirmation confirmation = Confirmation.newBuilder().setMessage(message).build();
         responseObserver.onNext(confirmation);
@@ -53,12 +56,13 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
         orderStatus = "Terminated";
     }
     
-
+    // Implement the status() method
     @Override
     public StreamObserver<OrderRequest> status(StreamObserver<OrderStatus> responseObserver) {
         return new StreamObserver<OrderRequest>() {
             @Override
             public void onNext(OrderRequest request) {
+            	 // Extracts the order details from the order request
                 String itemName = request.getItemName();
                 int quantity = request.getQuantity();
                 String customerName = request.getCustomerName();
@@ -66,14 +70,15 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
                 // Construct order status message
                 String statusMessage = "Order status for " + itemName + " (quantity: " + quantity +
                         ") requested by " + customerName + ": " + orderStatus;
-
+                // Build and send the statusMessage response
                 OrderStatus orderStatus = OrderStatus.newBuilder()
                         .setMessage(statusMessage)
                         .build();
 
                 responseObserver.onNext(orderStatus);
             }
-
+            
+            //Error handling
             @Override
             public void onError(Throwable t) {
                 // Handle error
@@ -85,11 +90,10 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
             }
         };
     }
-    
-    private  void registerService() {
+    // Define the registerService() method
+    private void registerService() {
 		
-		 try {
-	          
+		 try { // Create a JmDNS instance      
 	            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 	            
 	            String service_type = "_order._tcp.local.";
@@ -99,7 +103,7 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
 
 	            
 	            String service_description = "automate order service For Warehouse";
-	            // Register a service
+	            // Register the service with the JmDNS instance
 	            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, port, service_description);
 	            jmdns.registerService(serviceInfo);
 	            
