@@ -26,7 +26,7 @@ public class SmartLightingGUI {
     static String resolvedIP;
     public SmartLightingGUI() {
     	testJMDNS();
-    	System.out.println(port);
+    	
         client = new SmartLightingClient(resolvedIP, port);
 
         frame = new JFrame("Smart Lighting");

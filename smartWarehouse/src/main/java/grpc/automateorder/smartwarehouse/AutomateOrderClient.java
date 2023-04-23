@@ -17,8 +17,8 @@ public class AutomateOrderClient {
     private final AutomateOrderServiceGrpc.AutomateOrderServiceBlockingStub blockingStub;
     private final AutomateOrderServiceGrpc.AutomateOrderServiceStub asyncStub;
 
-    public AutomateOrderClient(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext().build());
+    public AutomateOrderClient(String resolvedIP, int port) {
+        this(ManagedChannelBuilder.forAddress(resolvedIP, port).usePlaintext().build());
     }
 
     public AutomateOrderClient(ManagedChannel channel) {

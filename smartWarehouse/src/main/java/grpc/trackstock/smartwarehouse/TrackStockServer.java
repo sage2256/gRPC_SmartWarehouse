@@ -1,10 +1,16 @@
 package grpc.trackstock.smartwarehouse;
 
 import java.io.IOException;
+import java.net.InetAddress;
+
 import grpc.trackstock.smartwarehouse.TrackStockServiceGrpc.TrackStockServiceImplBase;
 import io.grpc.Server;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+
 import io.grpc.stub.StreamObserver;
 import io.grpc.ServerBuilder;
 
@@ -14,6 +20,7 @@ public class TrackStockServer extends TrackStockServiceImplBase {
 		// TODO Auto-generated method stub
 				 TrackStockServer StockServer = new  TrackStockServer();// Create an instance of the TrackStockServer
 				 int port = 50054; // Define port number
+				 StockServer.registerService();
 				 
 				 Server server; // Declare a variable to hold the server instance
 				try {
@@ -77,5 +84,37 @@ public class TrackStockServer extends TrackStockServiceImplBase {
 	        }
 	        responseObserver.onCompleted();// Indicate to the client that the operation is complete
 	}
+	
+	private  void registerService() {
+		
+		 try {
+	          
+	            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+	            
+	            String service_type = "_stock._tcp.local.";
+	            String service_name = "smart Lighting";
+	           
+	            int port = 50054;
+
+	            
+	            String service_description = "Track Stock For Warehouse";
+	            // Register a service
+	            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, port, service_description);
+	            jmdns.registerService(serviceInfo);
+	            
+	            System.out.printf("registering service with type %s and name %s \n", service_type, service_name);
+	            
+	            // Wait a bit
+	            Thread.sleep(1000);
+
+	        } catch (IOException e) {
+	            System.out.println(e.getMessage());
+	        } catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    
+	}
+
 		
 }

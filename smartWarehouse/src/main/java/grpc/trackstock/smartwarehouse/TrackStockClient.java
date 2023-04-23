@@ -12,8 +12,8 @@ public class TrackStockClient {
     private final ManagedChannel channel;
     private final TrackStockServiceGrpc.TrackStockServiceStub stub;
 
-    public TrackStockClient(String host, int port) {
-        channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+    public TrackStockClient(String resolvedIP, int port) {
+        channel = ManagedChannelBuilder.forAddress(resolvedIP, port).usePlaintext().build();
         stub = TrackStockServiceGrpc.newStub(channel);
     }
 

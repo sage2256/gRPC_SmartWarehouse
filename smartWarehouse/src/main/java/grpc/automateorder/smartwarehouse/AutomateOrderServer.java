@@ -1,6 +1,10 @@
 package grpc.automateorder.smartwarehouse;
 
 import java.io.IOException;
+import java.net.InetAddress;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -16,7 +20,7 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
     public static void main(String[] args) {
          AutomateOrderServer orderServer = new AutomateOrderServer();
          int port = 50092;
-         
+         orderServer.registerService();
          Server server;
         try {
             server = ServerBuilder.forPort(port).addService(orderServer).build().start();
@@ -81,5 +85,36 @@ public class AutomateOrderServer extends AutomateOrderServiceImplBase{
             }
         };
     }
+    
+    private  void registerService() {
+		
+		 try {
+	          
+	            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+	            
+	            String service_type = "_order._tcp.local.";
+	            String service_name = "automate order";
+	           
+	            int port = 50092;
+
+	            
+	            String service_description = "automate order service For Warehouse";
+	            // Register a service
+	            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, port, service_description);
+	            jmdns.registerService(serviceInfo);
+	            
+	            System.out.printf("registering service with type %s and name %s \n", service_type, service_name);
+	            
+	            // Wait a bit
+	            Thread.sleep(1000);
+
+	        } catch (IOException e) {
+	            System.out.println(e.getMessage());
+	        } catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    
+	}
     
 }

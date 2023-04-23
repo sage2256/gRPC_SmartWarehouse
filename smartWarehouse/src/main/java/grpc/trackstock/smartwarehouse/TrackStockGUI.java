@@ -1,5 +1,9 @@
 package grpc.trackstock.smartwarehouse;
 
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
 import javax.swing.*;
 
 
@@ -8,6 +12,7 @@ import io.grpc.stub.StreamObserver;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
 
 public class TrackStockGUI {
 	// Declare necessary class variables
@@ -19,8 +24,12 @@ public class TrackStockGUI {
     private final JButton removeButton;
     private final JButton listButton;
     private final JTextArea outputArea;
+    static String host = "_order._tcp.local.";
+    static int port;
+    static String resolvedIP;
 
     public TrackStockGUI() {
+    	testJMDNS();
         // Initialize the client
         client = new TrackStockClient("localhost", 50054);
 
@@ -172,4 +181,35 @@ public class TrackStockGUI {
             }
         });
     }
+    
+    private static class SampleListener implements ServiceListener {
+		public void serviceAdded(ServiceEvent event) {
+			System.out.println("Service added: " + event.getInfo());
+		}
+		public void serviceRemoved(ServiceEvent event) {
+			System.out.println("Service removed: " + event.getInfo());
+		}
+		@SuppressWarnings("deprecation")
+		public void serviceResolved(ServiceEvent event) {
+					System.out.println("Service resolved: " + event.getInfo());
+
+                    ServiceInfo info = event.getInfo();
+                    port = info.getPort();
+                    resolvedIP = info.getHostAddress();
+                    System.out.println("IP Resolved - " + resolvedIP + ":" + port);
+		}
+    }
+    
+	public static void testJMDNS() {
+			try {
+				
+				JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+				jmdns.addServiceListener(host, new SampleListener());
+	            Thread.sleep(20000);
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+		}
+	}
+    
 }
